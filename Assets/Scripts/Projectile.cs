@@ -1,8 +1,9 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Projectile : MonoBehaviour
+public class Projectile : MonoBehaviourPunCallbacks
 {
     [Header("Projectile Properties")]
     [SerializeField] private float _projectileSpeed;
@@ -19,8 +20,23 @@ public class Projectile : MonoBehaviour
 
     #endregion
 
-    private void OnEnable()
+    new private void OnEnable()
     {
-        Destroy(this.gameObject, _lifeTimeInSeconds);
+        StartCoroutine(DestroyAfterSeconds(_lifeTimeInSeconds));
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.transform.CompareTag(TagIndex.PLAYER))
+        {
+            PhotonNetwork.Destroy(this.gameObject);
+        }
+    }
+
+    private IEnumerator DestroyAfterSeconds(float _time)
+    {
+        yield return new WaitForSeconds(_time);
+
+        PhotonNetwork.Destroy(this.gameObject);
     }
 }
